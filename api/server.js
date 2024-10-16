@@ -1,22 +1,17 @@
-console.clear();
+// api/index.js
 const Hapi = require("@hapi/hapi");
-const routes = require("../src/routes.js");
 
-const port = 5000;
-const host = "localhost";
+module.exports = async (req, res) => {
+	const server = Hapi.server();
 
-const init = async () => {
-	const server = Hapi.server({
-		port,
-		host: process.env.NODE_ENV !== "production" ? "localhost" : "0.0.0.0",
-		routes: {
-			cors: {
-				origin: ["*"],
-			},
+	server.route({
+		method: "GET",
+		path: "/",
+		handler: (request, h) => {
+			return {message: "Hello from Hapi on Vercel!"};
 		},
 	});
 
-	server.route(routes);
 	await server.initialize();
 
 	const response = await server.inject({
@@ -25,7 +20,7 @@ const init = async () => {
 		payload: req.body,
 	});
 
-	res.status(response.statusCode).send(response.result);
+	res.statusCode = response.statusCode;
+	res.setHeader("Content-Type", response.headers["content-type"]);
+	res.end(response.payload);
 };
-
-init();
